@@ -27,7 +27,6 @@ test_reqs = [
 ]
 
 doc_reqs = [
-    'Sphinx',
 ]
 
 dev_reqs = test_reqs + doc_reqs + [
@@ -46,7 +45,6 @@ dev_reqs = test_reqs + doc_reqs + [
     'pep8-naming',
     'dlint',
     'python-dotenv',
-    'rstcheck',
 ]
 
 
@@ -66,7 +64,9 @@ setup(
     zip_safe=False,
     install_requires=[
         'Flask',
+        'Werkzeug',
         'python-jose',
+        'requests',
     ],
     extras_require={
         'dev': dev_reqs,

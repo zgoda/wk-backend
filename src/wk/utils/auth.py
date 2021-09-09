@@ -1,8 +1,7 @@
-import json
 from functools import wraps
 from typing import Callable
-from urllib.request import urlopen
 
+import requests
 from flask import current_app, g, request
 from jose import jwt
 
@@ -53,8 +52,8 @@ def require_auth(f: Callable) -> Callable:
     def decorated(*args, **kw):
         c = current_app.config
         token = get_token()
-        jwks_doc = urlopen(c['AUTH0_JWKS_URI'])
-        jwks = json.load(jwks_doc.read())
+        resp = requests.get(c['AUTH0_JWKS_URI'])
+        jwks = resp.json()
         unverified_header = jwt.get_unverified_header(token)
         rsa_key = {}
         for key in jwks['keys']:
