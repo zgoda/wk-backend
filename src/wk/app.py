@@ -6,16 +6,17 @@ from werkzeug.utils import import_string
 from . import errors, api
 
 
-def create_app() -> Flask:
+def create_app(testing: bool = False) -> Flask:
     app = Flask(__name__.split('.')[0])
-    configure_app(app)
+    configure_app(app, testing)
     with app.app_context():
         configure_blueprints(app)
         configure_error_handlers(app)
     return app
 
 
-def configure_app(app: Flask) -> None:
+def configure_app(app: Flask, testing: bool) -> None:
+    app.config['TESTING'] = testing
     # default config
     app.config.from_object(import_string('wk.config.Config')())
     # test overrides
@@ -28,7 +29,7 @@ def configure_app(app: Flask) -> None:
 
 
 def configure_blueprints(app: Flask) -> None:
-    app.register_blueprint(api.bp, url_prefix='/api')
+    app.register_blueprint(api.bp, url_prefix='/api/v1')
 
 
 def configure_error_handlers(app: Flask) -> None:

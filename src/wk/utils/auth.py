@@ -7,28 +7,32 @@ from jose import jwt
 
 from ..errors import AuthError
 
+CODE_HEADER_MISSING = 'auth_header_missing'
+CODE_INVALID_HEADER = 'invalid_header'
+CODE_TOKEN_EXPIRED = 'token_expired'
+
 
 def get_token() -> str:
     auth = request.headers.get('Authorization')
     if not auth:
         raise AuthError({
-            'code': 'auth_header_missing',
+            'code': CODE_HEADER_MISSING,
             'description': 'Authorization header is expected',
         }, 401)
     parts = auth.split()
     if parts[0].lower() != 'bearer':
         raise AuthError({
-            'code': 'invalid_header',
+            'code': CODE_INVALID_HEADER,
             'description': 'Bearer type token is expected',
         }, 401)
     if len(parts) == 1:
         raise AuthError({
-            'code': 'invalid_header',
+            'code': CODE_INVALID_HEADER,
             'description': 'Token not present',
         }, 401)
     if len(parts) > 2:
         raise AuthError({
-            'code': 'invalid_header',
+            'code': CODE_INVALID_HEADER,
             'description': 'Authorization header must be bearer token',
         }, 401)
     return parts[1]
@@ -75,17 +79,17 @@ def require_auth(f: Callable) -> Callable:
                 )
             except jwt.ExpiredSignatureError:
                 raise AuthError({
-                    'code': 'token_expired',
+                    'code': CODE_TOKEN_EXPIRED,
                     'description': 'Authentication token expired',
                 }, 401)
             except jwt.JWTClaimsError:
                 raise AuthError({
-                    'code': 'invalid_header',
+                    'code': CODE_INVALID_HEADER,
                     'description': 'Unable to parse authentication token',
                 }, 401)
             return f(*args, **kw)
         raise AuthError({
-            'code': 'invalid_header',
+            'code': CODE_INVALID_HEADER,
             'description': 'Unable to find appropriate key',
         }, 401)
 
