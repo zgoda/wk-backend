@@ -24,6 +24,7 @@ test_reqs = [
     'pytest',
     'pytest-flask',
     'pytest-cov',
+    'pytest-mock',
 ]
 
 doc_reqs = [

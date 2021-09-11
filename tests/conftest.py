@@ -15,7 +15,12 @@ class TestResponse(Response):
 
 
 @pytest.fixture()
-def app():
+def app(mocker):
+    mocker.patch.dict('os.environ', {
+        'WK_SECRET_KEY': 'very secret',
+        'AUTH0_DOMAIN': 'some.test.domain',
+        'AUTH0_AUDIENCE': 'http://some.test.audience/api',
+    })
     app = create_app(testing=True)
     app.response_class = TestResponse
     with app.app_context():
