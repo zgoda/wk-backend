@@ -3,7 +3,7 @@ from typing import Mapping
 from flask import Blueprint, Response, jsonify
 from flask_jwt_extended import (
     create_access_token, create_refresh_token, get_jwt_identity, jwt_required,
-    set_refresh_cookies,
+    set_refresh_cookies, unset_jwt_cookies,
 )
 from peewee import IntegrityError
 from webargs.flaskparser import use_args
@@ -50,8 +50,11 @@ def login(args: Mapping[str, str]) -> Response:
 
 
 @bp.route('/logout', methods=['POST'])
+@jwt_required(refresh=True)
 def logout() -> Response:
-    return jsonify({'message': 'User logout'})
+    resp = jsonify({'message': 'user logged out'})
+    unset_jwt_cookies(resp)
+    return resp
 
 
 @bp.route('/refresh', methods=['POST'])
