@@ -66,8 +66,10 @@ setup(
     install_requires=[
         'Flask',
         'Werkzeug',
-        'python-jose',
-        'requests',
+        'Peewee',
+        'Flask-JWT-Extended',
+        'passlib[argon2]',
+        'webargs',
     ],
     extras_require={
         'dev': dev_reqs,
@@ -77,7 +79,6 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
-        'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3 :: Only',
