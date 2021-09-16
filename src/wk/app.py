@@ -4,7 +4,7 @@ import tempfile
 from flask import Flask, Response, jsonify
 from werkzeug.utils import import_string
 
-from . import api, auth, ext, cli
+from . import api, auth, cli, ext
 from .db import database
 
 
@@ -24,6 +24,9 @@ def configure_app(app: Flask, testing: bool) -> None:
     app.config['TESTING'] = testing
     # default config
     app.config.from_object(import_string('wk.config.Config')())
+    # dev overrides
+    if app.config['ENV'] == 'development':
+        app.config.from_object(import_string('wk.config.DevConfig')())
     # test overrides
     if app.testing:
         app.config.from_object(import_string('wk.config.TestConfig')())
@@ -52,14 +55,14 @@ def configure_database(app: Flask) -> None:
         kw = {}
     database.init(db_name, **kw)
 
-    @app.before_request
     def db_connect():
         database.connect(reuse_if_open=True)
+    app.before_request(db_connect)
 
-    @app.teardown_request
     def db_close(_):
         if not database.is_closed():
             database.close()
+    app.teardown_request(db_close)
 
 
 def configure_extensions(app: Flask) -> None:

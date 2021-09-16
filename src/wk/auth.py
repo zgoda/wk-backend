@@ -1,22 +1,52 @@
 from typing import Mapping
 
 from flask import Blueprint, Response, jsonify
+from flask_jwt_extended import (
+    create_access_token, create_refresh_token, get_jwt_identity, jwt_required,
+    set_refresh_cookies,
+)
+from peewee import IntegrityError
 from webargs.flaskparser import use_args
 
-from . import schema
+from . import db, schema
 
 bp = Blueprint('auth', __name__)
 
 
 @bp.route('/register', methods=['POST'])
-def register() -> Response:
-    return jsonify({'message': 'User registration'})
+@use_args(schema.login_args)
+def register(args: Mapping[str, str]) -> Response:
+    try:
+        with db.database.atomic():
+            user = db.User.create(
+                email=args['email'],
+                password=db.generate_password_hash(args['password']),
+            )
+        refresh_token = create_refresh_token(identity=user.email)
+        resp = jsonify({
+            'message': f'user {user.email} created',
+            'access_token': create_access_token(identity=user.email),
+        })
+        resp.status_code = 201
+        set_refresh_cookies(resp, refresh_token)
+        return resp
+    except IntegrityError:
+        return {'message': 'user already registered'}, 400
 
 
 @bp.route('/login', methods=['POST'])
 @use_args(schema.login_args)
 def login(args: Mapping[str, str]) -> Response:
-    return jsonify({'message': 'User login', 'credentials': args})
+    user = db.User.get_or_none(db.User.email == args['email'])
+    if user and user.check_password(args['password']):
+        refresh_token = create_refresh_token(identity=user.email)
+        resp = jsonify({
+            'message': f'logged in as {user.email}',
+            'access_token': create_access_token(identity=user.email),
+        })
+        set_refresh_cookies(resp, refresh_token)
+        return resp
+    return {'message': 'wrong credentials'}, 400
 
 
 @bp.route('/logout', methods=['POST'])
@@ -25,5 +55,6 @@ def logout() -> Response:
 
 
 @bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
 def refresh() -> Response:
-    return jsonify({'message': 'User logout'})
+    return {'access_token': create_access_token(identity=get_jwt_identity())}
