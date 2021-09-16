@@ -1,17 +1,21 @@
 import os
+import tempfile
 
 from flask import Flask, Response, jsonify
 from werkzeug.utils import import_string
 
-from . import api, auth, ext
+from . import api, auth, ext, cli
+from .db import database
 
 
 def create_app(testing: bool = False) -> Flask:
     app = Flask(__name__.split('.')[0])
     configure_app(app, testing)
     with app.app_context():
+        configure_database(app)
         configure_extensions(app)
         configure_blueprints(app)
+        configure_cli(app)
         configure_error_handlers(app)
     return app
 
@@ -29,6 +33,35 @@ def configure_app(app: Flask, testing: bool) -> None:
         app.config.from_envvar(config_from_env)
 
 
+def configure_database(app: Flask) -> None:
+    if app.testing:
+        tmp_dir = tempfile.mkdtemp()
+        db_name = os.path.join(tmp_dir, 'db.sqlite')
+    else:
+        db_name = os.getenv('DB_NAME')
+    kw = {
+        'pragmas': {
+            'journal_mode': 'wal',
+            'cache_size': -1 * 64000,
+            'foreign_keys': 1,
+            'ignore_check_constraints': 0,
+        }
+    }
+    if db_name is None:
+        db_name = ':memory:'
+        kw = {}
+    database.init(db_name, **kw)
+
+    @app.before_request
+    def db_connect():
+        database.connect(reuse_if_open=True)
+
+    @app.teardown_request
+    def db_close(_):
+        if not database.is_closed():
+            database.close()
+
+
 def configure_extensions(app: Flask) -> None:
     ext.jwt.init_app(app)
 
@@ -36,6 +69,10 @@ def configure_extensions(app: Flask) -> None:
 def configure_blueprints(app: Flask) -> None:
     app.register_blueprint(api.bp, url_prefix='/api/v1')
     app.register_blueprint(auth.bp, url_prefix='/auth/v1')
+
+
+def configure_cli(app: Flask) -> None:
+    app.cli.add_command(cli.db_cli)
 
 
 def configure_error_handlers(app: Flask) -> None:

@@ -16,7 +16,7 @@ def register() -> Response:
 @bp.route('/login', methods=['POST'])
 @use_args(schema.login_args)
 def login(args: Mapping[str, str]) -> Response:
-    return jsonify({'message': 'User login'})
+    return jsonify({'message': 'User login', 'credentials': args})
 
 
 @bp.route('/logout', methods=['POST'])
