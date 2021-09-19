@@ -9,6 +9,7 @@ from peewee import IntegrityError
 from webargs.flaskparser import use_args
 
 from . import db, schema
+from .utils.http import error_response
 
 bp = Blueprint('auth', __name__)
 
@@ -31,7 +32,7 @@ def register(args: Mapping[str, str]) -> Response:
         set_refresh_cookies(resp, refresh_token)
         return resp
     except IntegrityError:
-        return {'message': 'user already registered'}, 400
+        return error_response({'message': 'user already registered'})
 
 
 @bp.route('/login', methods=['POST'])
@@ -46,7 +47,7 @@ def login(args: Mapping[str, str]) -> Response:
         })
         set_refresh_cookies(resp, refresh_token)
         return resp
-    return {'message': 'wrong credentials'}, 400
+    return error_response({'message': 'wrong credentials'})
 
 
 @bp.route('/logout', methods=['POST'])
@@ -60,4 +61,4 @@ def logout() -> Response:
 @bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh() -> Response:
-    return {'access_token': create_access_token(identity=get_jwt_identity())}
+    return jsonify({'access_token': create_access_token(identity=get_jwt_identity())})

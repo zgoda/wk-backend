@@ -4,11 +4,11 @@ from peewee import CharField, Model as PeeweeModel, SqliteDatabase, TextField
 pwd_context = CryptContext(schemes=['argon2'])
 
 
-def generate_password_hash(password: str) -> str:  # pragma: nocover
+def generate_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def check_password_hash(stored: str, password: str) -> bool:  # pragma: nocover
+def check_password_hash(stored: str, password: str) -> bool:
     return pwd_context.verify(password, stored)
 
 
@@ -28,7 +28,7 @@ class User(Model):
     class Meta:
         table_name = 'users'
 
-    def set_password(self, password: str) -> None:  # pragma: nocover
+    def set_password(self, password: str) -> None:
         self.password = generate_password_hash(password)
 
     def check_password(self, password: str) -> bool:
