@@ -58,6 +58,7 @@ setup(
     url='https://github.com/zgoda/wk-back',
     long_description=read('README.rst'),
     long_description_content_type='text/x-rst',
+    license='BSD',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,
