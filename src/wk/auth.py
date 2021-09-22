@@ -61,4 +61,8 @@ def logout() -> Response:
 @bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh() -> Response:
-    return jsonify({'access_token': create_access_token(identity=get_jwt_identity())})
+    identity = get_jwt_identity()
+    refresh_token = create_refresh_token(identity=identity)
+    resp = jsonify({'access_token': create_access_token(identity=identity)})
+    set_refresh_cookies(resp, refresh_token)
+    return resp
