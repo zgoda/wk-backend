@@ -70,8 +70,8 @@ def configure_extensions(app: Flask) -> None:
 
 
 def configure_blueprints(app: Flask) -> None:
-    app.register_blueprint(api.bp, url_prefix='/api/v1')
-    app.register_blueprint(auth.bp, url_prefix='/auth/v1')
+    app.register_blueprint(api.bp, url_prefix='/v1/api')
+    app.register_blueprint(auth.bp, url_prefix='/v1/auth')
 
 
 def configure_cli(app: Flask) -> None:
