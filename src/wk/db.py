@@ -1,5 +1,10 @@
+from datetime import datetime
+
 from passlib.context import CryptContext
-from peewee import CharField, Model as PeeweeModel, SqliteDatabase, TextField
+from peewee import (
+    BooleanField, CharField, DateTimeField, Model as PeeweeModel, SqliteDatabase,
+    TextField, IntegerField, ForeignKeyField
+)
 
 pwd_context = CryptContext(schemes=['argon2'])
 
@@ -10,6 +15,10 @@ def generate_password_hash(password: str) -> str:
 
 def check_password_hash(stored: str, password: str) -> bool:
     return pwd_context.verify(password, stored)
+
+
+def current_timestamp_millis() -> int:
+    return int(datetime.utcnow().timestamp() * 1000)
 
 
 database = SqliteDatabase(None)
@@ -25,9 +34,18 @@ class User(Model):
     email = CharField(max_length=200, primary_key=True)
     password = TextField()
     name = CharField(max_length=200, index=True)
+    is_active = BooleanField(default=True, index=True)
+    created = DateTimeField(default=datetime.utcnow, index=True)
+    created_millis = IntegerField(default=current_timestamp_millis)
 
     class Meta:
         table_name = 'users'
+
+    @property
+    def display_name(self) -> str:
+        if self.is_active:
+            return self.name
+        return 'inactive user'
 
     def set_password(self, password: str) -> None:
         self.password = generate_password_hash(password)
@@ -36,4 +54,23 @@ class User(Model):
         return check_password_hash(self.password, password)
 
 
-models = [User]
+class Event(Model):
+    user = ForeignKeyField(User, backref='events')
+    created = DateTimeField(default=datetime.utcnow, index=True)
+    created_millis = IntegerField(default=current_timestamp_millis)
+    name = CharField(max_length=200)
+    date = DateTimeField(index=True)
+    date_millis = IntegerField()
+    length = IntegerField()
+    location = CharField(max_length=200)
+    virtual = BooleanField(default=False)
+    public = BooleanField(default=True)
+    description = TextField(null=True)
+
+    class Meta:
+        indexes = (
+            (('virtual', 'public'), False),
+        )
+
+
+models = [User, Event]
