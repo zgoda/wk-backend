@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from marshmallow import Schema, fields
 
 
@@ -19,14 +17,11 @@ class UserSchema(Schema):
     display_name = fields.Str(data_key='displayName')
     created_millis = fields.Int(data_key='created')
 
-    @classmethod
-    def get_instance(cls) -> UserSchema:
-        return cls()
-
 
 class EventSchema(Schema):
     user = fields.Nested(
-        UserSchema, only=['display_name', 'is_active', 'name', 'email'], dump_only=True,
+        UserSchema, only=('display_name', 'is_active', 'name', 'email'),
+        dump_only=True,
     )
     created_millis = fields.Int(data_key='created', dump_only=True)
     name = fields.Str(required=True)
@@ -37,6 +32,9 @@ class EventSchema(Schema):
     public = fields.Bool(default=True)
     description = fields.Str()
 
-    @classmethod
-    def get_instance(cls) -> EventSchema:
-        return cls()
+
+# schema instances
+login_schema = LoginSchema()
+register_schema = RegisterSchema()
+user_schema = UserSchema()
+event_schema = EventSchema()

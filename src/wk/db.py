@@ -73,6 +73,7 @@ class Event(Model):
             (('virtual', 'public'), False),
         )
 
+
 @unique
 class ParticipantRole(Enum):
     OWNER = 'owner'

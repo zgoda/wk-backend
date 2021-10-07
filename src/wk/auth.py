@@ -9,16 +9,14 @@ from peewee import IntegrityError
 from webargs.flaskparser import use_args
 
 from . import db
-from .schema import LoginSchema, RegisterSchema, UserSchema
+from .schema import login_schema, register_schema, user_schema
 from .utils.http import error_response
 
 bp = Blueprint('auth', __name__)
 
-user_schema = UserSchema.get_instance()
-
 
 @bp.route('/register', methods=['POST'])
-@use_args(RegisterSchema())
+@use_args(register_schema)
 def register(args: Mapping[str, str]) -> Response:
     email = args['email']
     name = args.get('name')
@@ -45,7 +43,7 @@ def register(args: Mapping[str, str]) -> Response:
 
 
 @bp.route('/login', methods=['POST'])
-@use_args(LoginSchema())
+@use_args(login_schema)
 def login(args: Mapping[str, str]) -> Response:
     user = db.User.get_or_none(db.User.email == args['email'])
     if user and user.check_password(args['password']):

@@ -8,6 +8,7 @@ class Config:
     JWT_COOKIE_SAMESITE = 'Lax'
     JWT_TOKEN_LOCATION = ['cookies']
     JWT_COOKIE_CSRF_PROTECT = True
+    PAGE_SIZE = 10
 
 
 class DevConfig(Config):
