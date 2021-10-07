@@ -71,6 +71,7 @@ setup(
         'Flask-JWT-Extended',
         'passlib[argon2]',
         'webargs',
+        'Marshmallow',
     ],
     extras_require={
         'dev': dev_reqs,

@@ -15,18 +15,24 @@ bp = Blueprint('auth', __name__)
 
 
 @bp.route('/register', methods=['POST'])
-@use_args(schema.login_args)
+@use_args(schema.RegisterSchema())
 def register(args: Mapping[str, str]) -> Response:
+    email = args['email']
+    name = args.get('name')
+    if not name:
+        name = email.split('@')[0]
     try:
         with db.database.atomic():
             user = db.User.create(
-                email=args['email'],
+                email=email,
+                name=name,
                 password=db.generate_password_hash(args['password']),
             )
         refresh_token = create_refresh_token(identity=user.email)
         resp = jsonify({
-            'message': f'user {user.email} created',
+            'message': f'user {user.name} created',
             'access_token': create_access_token(identity=user.email),
+            'user': schema.user_schema.dump(user)
         })
         resp.status_code = 201
         set_refresh_cookies(resp, refresh_token)
@@ -36,14 +42,15 @@ def register(args: Mapping[str, str]) -> Response:
 
 
 @bp.route('/login', methods=['POST'])
-@use_args(schema.login_args)
+@use_args(schema.LoginSchema())
 def login(args: Mapping[str, str]) -> Response:
     user = db.User.get_or_none(db.User.email == args['email'])
     if user and user.check_password(args['password']):
         refresh_token = create_refresh_token(identity=user.email)
         resp = jsonify({
-            'message': f'logged in as {user.email}',
+            'message': f'logged in as {user.name}',
             'access_token': create_access_token(identity=user.email),
+            'user': schema.user_schema.dump(user)
         })
         set_refresh_cookies(resp, refresh_token)
         return resp

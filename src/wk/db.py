@@ -24,6 +24,7 @@ class Model(PeeweeModel):
 class User(Model):
     email = CharField(max_length=200, primary_key=True)
     password = TextField()
+    name = CharField(max_length=200, index=True)
 
     class Meta:
         table_name = 'users'
