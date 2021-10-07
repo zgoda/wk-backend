@@ -35,6 +35,7 @@ dev_reqs = test_reqs + doc_reqs + [
     'setuptools',
     'wheel',
     'ipython',
+    'flask-shell-ipython',
     'ipdb',
     'watchdog',
     'httpie',

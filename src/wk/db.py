@@ -1,9 +1,10 @@
 from datetime import datetime
+from enum import Enum, unique
 
 from passlib.context import CryptContext
 from peewee import (
-    BooleanField, CharField, DateTimeField, Model as PeeweeModel, SqliteDatabase,
-    TextField, IntegerField, ForeignKeyField
+    BooleanField, CharField, DateTimeField, ForeignKeyField, IntegerField,
+    Model as PeeweeModel, SqliteDatabase, TextField,
 )
 
 pwd_context = CryptContext(schemes=['argon2'])
@@ -72,5 +73,17 @@ class Event(Model):
             (('virtual', 'public'), False),
         )
 
+@unique
+class ParticipantRole(Enum):
+    OWNER = 'owner'
+    GUEST = 'guest'
+    SUPPORT = 'support'
 
-models = [User, Event]
+
+class Participation(Model):
+    user = ForeignKeyField(User, backref='participations')
+    event = ForeignKeyField(Event, backref='participants')
+    role = CharField(max_length=100, index=True)
+
+
+models = [User, Event, Participation]
