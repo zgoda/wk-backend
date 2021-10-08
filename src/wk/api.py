@@ -1,5 +1,6 @@
 from flask import Blueprint, Response, current_app, jsonify
 from flask.views import MethodView
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from webargs.flaskparser import use_args
 
 from .db import Event, User
@@ -12,12 +13,15 @@ bp = Blueprint('api', __name__)
 
 class UserResource(MethodView):
 
+    @jwt_required()
     @use_args(user_schema)
     def post(self, args, email) -> Response:
         try:
             user = User.get_by_id(email)
         except User.DoesNotExist:
             return error_response({'message': 'user not found'}, code=404)
+        if email != get_jwt_identity():
+            return error_response({'message': 'not allowed'}, code=403)
         user.name = args.get('name')
         user.save()
         return jsonify({
