@@ -11,11 +11,11 @@ class RegisterSchema(LoginSchema):
 
 
 class UserSchema(Schema):
-    email = fields.Email(required=True)
+    email = fields.Email(dump_only=True)
     name = fields.Str()
-    is_active = fields.Bool(data_key='isActive')
-    display_name = fields.Str(data_key='displayName')
-    created_millis = fields.Int(data_key='created')
+    is_active = fields.Bool(data_key='isActive', dump_only=True)
+    display_name = fields.Str(data_key='displayName', dump_only=True)
+    created_millis = fields.Int(data_key='created', dump_only=True)
 
 
 class EventSchema(Schema):

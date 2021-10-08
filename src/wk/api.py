@@ -2,14 +2,28 @@ from flask import Blueprint, Response, current_app, jsonify
 from flask.views import MethodView
 from webargs.flaskparser import use_args
 
-from .db import Event
-from .schema import event_schema
+from .db import Event, User
+from .schema import event_schema, user_schema
+from .utils.http import error_response
 from .utils.views import get_page
 
 bp = Blueprint('api', __name__)
 
 
-class EventCollection(MethodView):
+class UserResource(MethodView):
+
+    @use_args(user_schema)
+    def post(self, args, email) -> Response:
+        try:
+            user = User.get_by_id(email)
+        except User.DoesNotExist:
+            return error_response({'message': 'user not found'}, code=404)
+        user.name = args.get('name')
+        user.save()
+        return jsonify({'message': 'user data changed'})
+
+
+class EventCollectionResource(MethodView):
 
     def get(self) -> Response:
         page = get_page()
@@ -24,6 +38,9 @@ class EventCollection(MethodView):
 
 # register routes
 bp.add_url_rule(
+    '/user/<email>', endpoint='user_item', view_func=UserResource.as_view('user_item')
+)
+bp.add_url_rule(
     '/events', endpoint='event_collection',
-    view_func=EventCollection.as_view('event_collection'),
+    view_func=EventCollectionResource.as_view('event_collection'),
 )
