@@ -85,6 +85,7 @@ class Participation(Model):
     user = ForeignKeyField(User, backref='participations')
     event = ForeignKeyField(Event, backref='participants')
     role = CharField(max_length=100, index=True)
+    description = TextField(null=True)
 
 
 models = [User, Event, Participation]
