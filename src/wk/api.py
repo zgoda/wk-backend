@@ -20,7 +20,10 @@ class UserResource(MethodView):
             return error_response({'message': 'user not found'}, code=404)
         user.name = args.get('name')
         user.save()
-        return jsonify({'message': 'user data changed'})
+        return jsonify({
+            'message': 'user data changed',
+            'user': user_schema.dump(user)
+        })
 
 
 class EventCollectionResource(MethodView):
