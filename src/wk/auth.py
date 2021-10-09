@@ -3,7 +3,7 @@ from typing import Mapping
 from flask import Blueprint, Response, jsonify
 from flask_jwt_extended import (
     create_access_token, create_refresh_token, get_jwt_identity, jwt_required,
-    set_refresh_cookies, unset_jwt_cookies,
+    set_access_cookies, set_refresh_cookies, unset_jwt_cookies,
 )
 from peewee import IntegrityError
 from webargs.flaskparser import use_args
@@ -30,12 +30,14 @@ def register(args: Mapping[str, str]) -> Response:
                 password=db.generate_password_hash(args['password']),
             )
         refresh_token = create_refresh_token(identity=user.email)
+        access_token = create_access_token(identity=user.email)
         resp = jsonify({
             'message': f'user {user.name} created',
-            'access_token': create_access_token(identity=user.email),
-            'user': user_schema.dump(user)
+            'user': user_schema.dump(user),
+            'access_token': access_token,
         })
         resp.status_code = 201
+        set_access_cookies(resp, access_token)
         set_refresh_cookies(resp, refresh_token)
         return resp
     except IntegrityError:
@@ -48,11 +50,13 @@ def login(args: Mapping[str, str]) -> Response:
     user = db.User.get_or_none(db.User.email == args['email'])
     if user and user.check_password(args['password']):
         refresh_token = create_refresh_token(identity=user.email)
+        access_token = create_access_token(identity=user.email)
         resp = jsonify({
             'message': f'logged in as {user.name}',
-            'access_token': create_access_token(identity=user.email),
+            'access_token': access_token,
             'user': user_schema.dump(user)
         })
+        set_access_cookies(resp, access_token)
         set_refresh_cookies(resp, refresh_token)
         return resp
     return error_response({'message': 'wrong credentials'})
@@ -71,6 +75,8 @@ def logout() -> Response:
 def refresh() -> Response:
     identity = get_jwt_identity()
     refresh_token = create_refresh_token(identity=identity)
-    resp = jsonify({'access_token': create_access_token(identity=identity)})
+    access_token = create_access_token(identity=identity)
+    resp = jsonify({'access_token': access_token})
+    set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
     return resp
