@@ -34,7 +34,6 @@ def register(args: Mapping[str, str]) -> Response:
         resp = jsonify({
             'message': f'user {user.name} created',
             'user': user_schema.dump(user),
-            'access_token': access_token,
         })
         resp.status_code = 201
         set_access_cookies(resp, access_token)
@@ -53,7 +52,6 @@ def login(args: Mapping[str, str]) -> Response:
         access_token = create_access_token(identity=user.email)
         resp = jsonify({
             'message': f'logged in as {user.name}',
-            'access_token': access_token,
             'user': user_schema.dump(user)
         })
         set_access_cookies(resp, access_token)
@@ -76,7 +74,7 @@ def refresh() -> Response:
     identity = get_jwt_identity()
     refresh_token = create_refresh_token(identity=identity)
     access_token = create_access_token(identity=identity)
-    resp = jsonify({'access_token': access_token})
+    resp = jsonify({'message': 'refresh OK'})
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
     return resp

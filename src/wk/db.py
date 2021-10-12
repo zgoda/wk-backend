@@ -88,4 +88,13 @@ class Participation(Model):
     description = TextField(null=True)
 
 
-models = [User, Event, Participation]
+class ParticipationAsset(Model):
+    participation = ForeignKeyField(Participation, backref='assets')
+    asset_type = CharField(max_length=100)
+    url = TextField()
+    created = DateTimeField(default=datetime.utcnow, index=True)
+    created_millis = IntegerField(default=current_timestamp_millis)
+    description = TextField(null=True)
+
+
+models = [User, Event, Participation, ParticipationAsset]
