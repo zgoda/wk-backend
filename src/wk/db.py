@@ -3,11 +3,17 @@ from enum import Enum, unique
 
 from passlib.context import CryptContext
 from peewee import (
-    BooleanField, CharField, DateTimeField, ForeignKeyField, IntegerField,
-    Model as PeeweeModel, SqliteDatabase, TextField,
+    BooleanField,
+    CharField,
+    DateTimeField,
+    ForeignKeyField,
+    IntegerField,
+    Model as PeeweeModel,
+    SqliteDatabase,
+    TextField,
 )
 
-pwd_context = CryptContext(schemes=['argon2'])
+pwd_context = CryptContext(schemes=["argon2"])
 
 
 def generate_password_hash(password: str) -> str:
@@ -26,7 +32,6 @@ database = SqliteDatabase(None)
 
 
 class Model(PeeweeModel):
-
     class Meta:
         database = database
 
@@ -40,13 +45,13 @@ class User(Model):
     created_millis = IntegerField(default=current_timestamp_millis)
 
     class Meta:
-        table_name = 'users'
+        table_name = "users"
 
     @property
     def display_name(self) -> str:
         if self.is_active:
             return self.name
-        return 'inactive user'
+        return "inactive user"
 
     def set_password(self, password: str) -> None:
         self.password = generate_password_hash(password)
@@ -56,7 +61,7 @@ class User(Model):
 
 
 class Event(Model):
-    user = ForeignKeyField(User, backref='events')
+    user = ForeignKeyField(User, backref="events")
     created = DateTimeField(default=datetime.utcnow, index=True)
     created_millis = IntegerField(default=current_timestamp_millis)
     name = CharField(max_length=200)
@@ -69,27 +74,25 @@ class Event(Model):
     description = TextField(null=True)
 
     class Meta:
-        indexes = (
-            (('virtual', 'public'), False),
-        )
+        indexes = ((("virtual", "public"), False),)
 
 
 @unique
 class ParticipantRole(Enum):
-    OWNER = 'owner'
-    GUEST = 'guest'
-    SUPPORT = 'support'
+    OWNER = "owner"
+    GUEST = "guest"
+    SUPPORT = "support"
 
 
 class Participation(Model):
-    user = ForeignKeyField(User, backref='participations')
-    event = ForeignKeyField(Event, backref='participants')
+    user = ForeignKeyField(User, backref="participations")
+    event = ForeignKeyField(Event, backref="participants")
     role = CharField(max_length=100, index=True)
     description = TextField(null=True)
 
 
 class ParticipationAsset(Model):
-    participation = ForeignKeyField(Participation, backref='assets')
+    participation = ForeignKeyField(Participation, backref="assets")
     asset_type = CharField(max_length=100)
     url = TextField()
     created = DateTimeField(default=datetime.utcnow, index=True)
