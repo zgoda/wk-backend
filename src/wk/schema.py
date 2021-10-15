@@ -29,8 +29,8 @@ class EventSchema(Schema):
     date_millis = fields.Int(data_key="date", required=True)
     length = fields.Int(required=True)
     location = fields.Str(required=True)
-    virtual = fields.Bool(default=False)
-    public = fields.Bool(default=True)
+    virtual = fields.Bool(load_default=False)
+    public = fields.Bool(load_default=True)
     description = fields.Str()
 
 

@@ -16,4 +16,4 @@ class DevConfig(Config):
 
 
 class TestConfig(Config):
-    pass
+    JWT_COOKIE_SECURE = False

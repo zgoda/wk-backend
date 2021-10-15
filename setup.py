@@ -25,6 +25,7 @@ test_reqs = [
     "pytest-flask",
     "pytest-cov",
     "pytest-mock",
+    "pytest-factoryboy",
 ]
 
 doc_reqs = []
