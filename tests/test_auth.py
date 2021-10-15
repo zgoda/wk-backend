@@ -35,3 +35,35 @@ def test_register_fail_incomplete_data(client):
     input_data = {"name": "User Name", "password": "somepassword"}
     rv = client.post(url, json=input_data)
     assert rv.status_code == 422
+
+
+def test_login(client, user_factory):
+    email = "user@example.com"
+    password = "pass"
+    user_factory(email=email, password=password)
+    url = url_for("auth.login")
+    input_data = {"email": email, "password": password}
+    rv = client.post(url, json=input_data)
+    assert rv.status_code == 200
+    assert "user" in rv.json
+
+
+def test_login_fail_bad_credentials(client, user_factory):
+    email = "user@example.com"
+    password = "pass"
+    user_factory(email=email, password=password)
+    url = url_for("auth.login")
+    input_data = {"email": email, "password": "wrong"}
+    rv = client.post(url, json=input_data)
+    assert rv.status_code == 400
+    assert "wrong credentials" in rv.json["message"]
+
+
+def test_login_fail_user_not_found(client):
+    email = "user@example.com"
+    password = "pass"
+    url = url_for("auth.login")
+    input_data = {"email": email, "password": password}
+    rv = client.post(url, json=input_data)
+    assert rv.status_code == 400
+    assert "wrong credentials" in rv.json["message"]
