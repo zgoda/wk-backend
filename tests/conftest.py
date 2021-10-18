@@ -8,9 +8,10 @@ from pytest_factoryboy import register
 from wk.app import create_app
 from wk.db import database, models
 
-from .factories import UserFactory
+from .factories import EventFactory, UserFactory
 
 register(UserFactory)
+register(EventFactory)
 
 
 def fake_gen_password_hash(password):

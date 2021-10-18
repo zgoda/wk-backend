@@ -1,4 +1,5 @@
-from marshmallow import Schema, fields
+from datetime import date
+from marshmallow import Schema, fields, post_load
 
 
 class LoginSchema(Schema):
@@ -32,6 +33,11 @@ class EventSchema(Schema):
     virtual = fields.Bool(load_default=False)
     public = fields.Bool(load_default=True)
     description = fields.Str()
+
+    @post_load()
+    def date_from_millis(self, data, **kwargs):
+        data["date"] = date.fromtimestamp(data["date_millis"] / 1000)
+        return data
 
 
 # schema instances
