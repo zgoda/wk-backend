@@ -80,22 +80,40 @@ def test_logout(client, login, user_factory):
     assert rv.status_code == 200
 
 
-def test_logout_bad_token(client, login, user_factory):
+@pytest.mark.parametrize("token", ["wrong", None], ids=["wrong", "none"])
+def test_logout_bad_token(client, login, user_factory, token):
     email = "user@example.com"
     password = "somepassword"
     user_factory(email=email, password=password)
     login(client, email, password)
-    headers = {"X-CSRF-TOKEN": "wrong"}
+    headers = {}
+    if token:
+        headers["X-CSRF-TOKEN"] = "wrong"
     url = url_for("auth.logout")
     rv = client.post(url, headers=headers)
     assert rv.status_code == 401
 
 
-def test_logout_missing_token(client, login, user_factory):
+def test_refresh(client, login, user_factory):
+    email = "user@example.com"
+    password = "somepassword"
+    user_factory(email=email, password=password)
+    tokens = login(client, email, password)
+    headers = {"X-CSRF-TOKEN": tokens.csrf_refresh_token["csrf_refresh_token"]}
+    url = url_for("auth.refresh")
+    rv = client.post(url, headers=headers)
+    assert rv.status_code == 200
+
+
+@pytest.mark.parametrize("token", ["wrong", None], ids=["wrong", "none"])
+def test_refresh_bad_token(client, login, user_factory, token):
     email = "user@example.com"
     password = "somepassword"
     user_factory(email=email, password=password)
     login(client, email, password)
-    url = url_for("auth.logout")
-    rv = client.post(url)
+    headers = {}
+    if token:
+        headers["X-CSRF-TOKEN"] = "wrong"
+    url = url_for("auth.refresh")
+    rv = client.post(url, headers=headers)
     assert rv.status_code == 401
