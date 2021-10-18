@@ -7,7 +7,7 @@ def test_user_modify(client, login, user_factory):
     name = "test name"
     user_factory(email=email, password=password, name=name)
     tokens = login(client, email, password)
-    headers = {"X-CSRF-TOKEN": tokens.csrf_access_token["csrf_access_token"]}
+    headers = {"X-CSRF-TOKEN": tokens.csrf_access_token}
     url = url_for("api.user_item", email=email)
     data = {"name": "My Fancy Name"}
     rv = client.post(url, json=data, headers=headers)
@@ -21,7 +21,7 @@ def test_user_modify_fail_notfound(client, login, user_factory):
     password = "pass"
     user_factory(email=email, password=password)
     tokens = login(client, email, password)
-    headers = {"X-CSRF-TOKEN": tokens.csrf_access_token["csrf_access_token"]}
+    headers = {"X-CSRF-TOKEN": tokens.csrf_access_token}
     url = url_for("api.user_item", email=another_email)
     data = {"name": "My Fancy Name"}
     rv = client.post(url, json=data, headers=headers)
@@ -35,7 +35,7 @@ def test_user_modify_fail_notallowed(client, login, user_factory):
     user_factory(email=email, password=password)
     user_factory(email=another_email, password=password)
     tokens = login(client, email, password)
-    headers = {"X-CSRF-TOKEN": tokens.csrf_access_token["csrf_access_token"]}
+    headers = {"X-CSRF-TOKEN": tokens.csrf_access_token}
     url = url_for("api.user_item", email=another_email)
     data = {"name": "My Fancy Name"}
     rv = client.post(url, json=data, headers=headers)

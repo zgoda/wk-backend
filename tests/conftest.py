@@ -52,10 +52,16 @@ def login():
         url = url_for("auth.login")
         rv = client.post(url, json={"email": email, "password": password})
         return Tokens(
-            csrf_access_token=_cookie_from_response(rv, "csrf_access_token"),
-            csrf_refresh_token=_cookie_from_response(rv, "csrf_refresh_token"),
-            access_token=_cookie_from_response(rv, "access_token"),
-            refresh_token=_cookie_from_response(rv, "refresh_token"),
+            csrf_access_token=_cookie_from_response(rv, "csrf_access_token").get(
+                "csrf_access_token"
+            ),
+            csrf_refresh_token=_cookie_from_response(rv, "csrf_refresh_token").get(
+                "csrf_refresh_token"
+            ),
+            access_token=_cookie_from_response(rv, "access_token").get("access_token"),
+            refresh_token=_cookie_from_response(rv, "refresh_token").get(
+                "refresh_token"
+            ),
         )
 
     return _login
