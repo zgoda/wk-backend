@@ -1,7 +1,6 @@
 from flask import Blueprint, Response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from peewee import PeeweeException
 from webargs.flaskparser import use_args
 
 from .db import Event, User
@@ -38,18 +37,10 @@ class EventCollectionResource(MethodView):
     @use_args(event_schema)
     def post(self, args) -> Response:
         email = get_jwt_identity()
-        try:
-            e = Event.create(user_id=email, **args)
-            resp = jsonify({"message": "Event created", "event": event_schema.dump(e)})
-            resp.status_code = 201
-            return resp
-        except PeeweeException as err:
-            return error_response(
-                {
-                    "message": "Event create failed",
-                    "error": err.args,
-                }
-            )
+        e = Event.create(user_id=email, **args)
+        resp = jsonify({"message": "Event created", "event": event_schema.dump(e)})
+        resp.status_code = 201
+        return resp
 
 
 # register routes

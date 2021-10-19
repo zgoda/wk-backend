@@ -31,6 +31,15 @@ def test_get_paginated_past_lastpage(client, event_factory):
     assert len(rv.json["events"]) == 0
 
 
+@pytest.mark.options(PAGE_SIZE=2)
+def test_get_paginated_wrong_page(client, event_factory):
+    event_factory.create_batch(5)
+    url = url_for("api.event_collection", page="invalid")
+    rv = client.get(url)
+    assert rv.status_code == 200
+    assert len(rv.json["events"]) == 2
+
+
 def test_create_event(client, login, user_factory):
     email = "test@example.com"
     password = "pass"
