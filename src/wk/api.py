@@ -14,9 +14,11 @@ bp = Blueprint("api", __name__)
 class UserItemResource(MethodView):
     @jwt_required()
     @use_args(user_schema)
-    def post(self, args, email) -> Response:
+    def patch(self, args, email) -> Response:
         try:
-            user = User.get_by_id(email)
+            user = User.get(
+                (User.email == email) & (User.is_active == True)  # noqa: E712
+            )
         except User.DoesNotExist:
             return error_response({"message": "user not found"}, code=404)
         if email != get_jwt_identity():
@@ -37,7 +39,13 @@ class EventCollectionResource(MethodView):
     @use_args(event_schema)
     def post(self, args) -> Response:
         email = get_jwt_identity()
-        e = Event.create(user_id=email, **args)
+        try:
+            user = User.get(
+                (User.email == email) & (User.is_active == True)  # noqa: E712
+            )
+        except User.DoesNotExist:
+            return error_response({"message": f"user {email} is inactive"}, 401)
+        e = Event.create(user=user, **args)
         resp = jsonify({"message": "Event created", "event": event_schema.dump(e)})
         resp.status_code = 201
         return resp
