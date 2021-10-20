@@ -20,7 +20,7 @@ def create_app(testing: bool = False) -> Flask:
     return app
 
 
-def configure_app(app: Flask, testing: bool) -> None:
+def configure_app(app: Flask, testing: bool) -> None:  # pragma: nocover
     app.config["TESTING"] = testing
     # default config
     app.config.from_object(import_string("wk.config.Config")())
@@ -36,7 +36,7 @@ def configure_app(app: Flask, testing: bool) -> None:
         app.config.from_envvar(config_from_env)
 
 
-def configure_database(app: Flask) -> None:
+def configure_database(app: Flask) -> None:  # pragma: nocover
     if app.testing:
         tmp_dir = tempfile.mkdtemp()
         db_name = os.path.join(tmp_dir, "db.sqlite")
@@ -84,9 +84,6 @@ def configure_error_handlers(app: Flask) -> None:
     @app.errorhandler(400)
     @app.errorhandler(422)
     def bad_request_error(err) -> Response:
-        headers = err.data.get("headers", None)
+        headers = err.data.get("headers", {})
         messages = err.data.get("messages", ["Invalid request."])
-        if headers:
-            return jsonify({"errors": messages}), err.code, headers
-        else:
-            return jsonify({"errors": messages}), err.code
+        return jsonify({"errors": messages}), err.code, headers
