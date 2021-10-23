@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum, unique
+from typing import Optional
 
 from passlib.context import CryptContext
 from peewee import BooleanField, CharField, DateTimeField, ForeignKeyField, IntegerField
@@ -55,8 +56,11 @@ class User(Model):
         return check_password_hash(self.password, password)
 
     @classmethod
-    def get_active(cls, email: str) -> User:
-        return cls.get((cls.email == email) & (cls.is_active == True))  # noqa: E712
+    def get_active(cls, email: str) -> Optional[User]:
+        try:
+            return cls.get((cls.email == email) & (cls.is_active == True))  # noqa: E712
+        except cls.DoesNotExist:
+            return None
 
 
 class Event(Model):

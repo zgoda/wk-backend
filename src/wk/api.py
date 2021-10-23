@@ -39,10 +39,7 @@ class EventCollectionResource(MethodView):
     @use_args(event_schema)
     def post(self, args) -> Response:
         email = get_jwt_identity()
-        try:
-            user = User.get_active(email)
-        except User.DoesNotExist:
-            return error_response({"message": f"user {email} not found"}, 401)
+        user = User.get_active(email)
         e = Event.create(user=user, **args)
         resp = jsonify({"message": "Event created", "event": event_schema.dump(e)})
         resp.status_code = 201

@@ -56,20 +56,3 @@ def test_create_event(client, login, user_factory):
     rv = client.post(url, json=data, headers=headers)
     assert rv.status_code == 201
     assert "event" in rv.json
-
-
-def test_create_event_fail_user_inactive(client, login, user_factory):
-    email = "test@example.com"
-    password = "pass"
-    user_factory(email=email, password=password, is_active=False)
-    tokens = login(client, email, password)
-    headers = {"X-CSRF-TOKEN": tokens.csrf_access_token}
-    url = url_for("api.event_collection")
-    data = {
-        "name": "event name",
-        "location": "Brok",
-        "date": days_from_now_millis(16),
-        "length": 20,
-    }
-    rv = client.post(url, json=data, headers=headers)
-    assert rv.status_code == 401
