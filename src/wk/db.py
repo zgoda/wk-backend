@@ -56,7 +56,7 @@ class User(Model):
 
     @classmethod
     def get_active(cls, email: str) -> User:
-        return cls.select((cls.email == email) & (cls.is_active == True))  # noqa: E712
+        return cls.get((cls.email == email) & (cls.is_active == True))  # noqa: E712
 
 
 class Event(Model):
