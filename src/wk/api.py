@@ -31,7 +31,7 @@ class UserItemResource(MethodView):
 class EventCollectionResource(MethodView):
     def get(self) -> Response:
         page = get_page()
-        q = Event.select().order_by(Event.date.desc())
+        q = Event.select().order_by(Event.date)
         q = q.paginate(page, current_app.config["PAGE_SIZE"])
         return jsonify({"events": event_schema.dump(q, many=True)})
 
@@ -40,11 +40,9 @@ class EventCollectionResource(MethodView):
     def post(self, args) -> Response:
         email = get_jwt_identity()
         try:
-            user = User.get(
-                (User.email == email) & (User.is_active == True)  # noqa: E712
-            )
+            user = User.get_active(email)
         except User.DoesNotExist:
-            return error_response({"message": f"user {email} is inactive"}, 401)
+            return error_response({"message": f"user {email} not found"}, 401)
         e = Event.create(user=user, **args)
         resp = jsonify({"message": "Event created", "event": event_schema.dump(e)})
         resp.status_code = 201

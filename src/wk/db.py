@@ -1,17 +1,12 @@
+from __future__ import annotations
+
 from datetime import datetime
 from enum import Enum, unique
 
 from passlib.context import CryptContext
-from peewee import (
-    BooleanField,
-    CharField,
-    DateTimeField,
-    ForeignKeyField,
-    IntegerField,
-    Model as PeeweeModel,
-    SqliteDatabase,
-    TextField,
-)
+from peewee import BooleanField, CharField, DateTimeField, ForeignKeyField, IntegerField
+from peewee import Model as PeeweeModel
+from peewee import SqliteDatabase, TextField
 
 pwd_context = CryptContext(schemes=["argon2"])
 
@@ -58,6 +53,10 @@ class User(Model):
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
+
+    @classmethod
+    def get_active(cls, email: str) -> User:
+        return cls.select((cls.email == email) & (cls.is_active == True))  # noqa: E712
 
 
 class Event(Model):

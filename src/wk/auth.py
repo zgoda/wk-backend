@@ -13,7 +13,7 @@ from flask_jwt_extended import (
 from peewee import IntegrityError
 from webargs.flaskparser import use_args
 
-from . import db
+from .db import User, database, generate_password_hash
 from .schema import login_schema, register_schema, user_schema
 from .utils.http import error_response
 
@@ -28,11 +28,11 @@ def register(args: Mapping[str, str]) -> Response:
     if not name:
         name = email.split("@")[0]
     try:
-        with db.database.atomic():
-            user = db.User.create(
+        with database.atomic():
+            user = User.create(
                 email=email,
                 name=name,
-                password=db.generate_password_hash(args["password"]),
+                password=generate_password_hash(args["password"]),
             )
         refresh_token = create_refresh_token(identity=user.email)
         access_token = create_access_token(identity=user.email)
@@ -53,7 +53,7 @@ def register(args: Mapping[str, str]) -> Response:
 @bp.route("/login", methods=["POST"])
 @use_args(login_schema)
 def login(args: Mapping[str, str]) -> Response:
-    user = db.User.get_or_none(db.User.email == args["email"])
+    user = User.get_active(args["email"])
     if user and user.check_password(args["password"]):
         refresh_token = create_refresh_token(identity=user.email)
         access_token = create_access_token(identity=user.email)
