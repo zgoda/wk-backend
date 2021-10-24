@@ -6,7 +6,7 @@ from webargs.flaskparser import use_args
 from .db import Event, User
 from .schema import event_schema, user_schema
 from .utils.http import error_response
-from .utils.views import get_page
+from .utils.pagination import Pagination
 
 bp = Blueprint("api", __name__)
 
@@ -30,10 +30,14 @@ class UserItemResource(MethodView):
 
 class EventCollectionResource(MethodView):
     def get(self) -> Response:
-        page = get_page()
         q = Event.select().order_by(Event.date)
-        q = q.paginate(page, current_app.config["PAGE_SIZE"])
-        return jsonify({"events": event_schema.dump(q, many=True)})
+        pagination = Pagination(q, page_size=current_app.config["PAGE_SIZE"])
+        return jsonify(
+            {
+                "events": event_schema.dump(pagination.items, many=True),
+                "pagination": pagination.serialize_meta(),
+            }
+        )
 
     @jwt_required()
     @use_args(event_schema)

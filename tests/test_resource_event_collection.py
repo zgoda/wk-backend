@@ -11,6 +11,7 @@ def test_get_paginated(client, config, event_factory):
     rv = client.get(url)
     assert rv.status_code == 200
     assert len(rv.json["events"]) <= config["PAGE_SIZE"]
+    assert "pagination" in rv.json
 
 
 @pytest.mark.options(PAGE_SIZE=2)
