@@ -50,4 +50,4 @@ class Pagination:
         return self.query.paginate(self.page, self.page_size)
 
     def serialize_meta(self) -> Mapping[str, Union[bool, int]]:
-        pagination_meta.dump(self)
+        return pagination_meta.dump(self)
