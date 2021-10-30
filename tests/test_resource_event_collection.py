@@ -15,6 +15,16 @@ def test_get_paginated(client, config, event_factory):
 
 
 @pytest.mark.options(PAGE_SIZE=2)
+def test_get_paginated_archive(client, config, event_factory):
+    event_factory.create_batch(5, with_archived=True)
+    url = url_for("api.event_collection", current="n")
+    rv = client.get(url)
+    assert rv.status_code == 200
+    assert len(rv.json["events"]) <= config["PAGE_SIZE"]
+    assert rv.json["pagination"]["numPages"] == 3
+
+
+@pytest.mark.options(PAGE_SIZE=2)
 def test_get_paginated_last_page(client, event_factory):
     event_factory.create_batch(5)
     url = url_for("api.event_collection", page=3)

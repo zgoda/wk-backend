@@ -51,3 +51,8 @@ class EventFactory(PeeweeModelFactory):
     class Meta:
         model = Event
         database = database
+
+    class Params:
+        with_archived = factory.Trait(
+            date=factory.Faker("date_this_decade", before_today=True, after_today=True)
+        )

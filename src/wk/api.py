@@ -1,6 +1,8 @@
+import datetime
 from flask import Blueprint, Response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from webargs import fields
 from webargs.flaskparser import use_args
 
 from .db import Event, User
@@ -29,8 +31,13 @@ class UserItemResource(MethodView):
 
 
 class EventCollectionResource(MethodView):
-    def get(self) -> Response:
-        q = Event.select().order_by(Event.date)
+    @use_args({"current": fields.Bool(load_default="y")}, location="query")
+    def get(self, args) -> Response:
+        if args["current"]:
+            q = Event.select().where(Event.date >= datetime.date.today())
+        else:
+            q = Event.select()
+        q.order_by(Event.date)
         pagination = Pagination(q, page_size=current_app.config["PAGE_SIZE"])
         return jsonify(
             {
@@ -45,7 +52,7 @@ class EventCollectionResource(MethodView):
         email = get_jwt_identity()
         user = User.get_active(email)
         e = Event.create(user=user, **args)
-        resp = jsonify({"message": "Event created", "event": event_schema.dump(e)})
+        resp = jsonify({"message": "event created", "event": event_schema.dump(e)})
         resp.status_code = 201
         return resp
 
