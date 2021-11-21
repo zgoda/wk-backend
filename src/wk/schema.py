@@ -20,7 +20,7 @@ class UserSchema(Schema):
 
 
 class EventSchema(Schema):
-    id = fields.Int(dump_only=True)
+    id = fields.Int(dump_only=True)  # noqa: A003
     user = fields.Nested(
         UserSchema,
         only=("display_name", "is_active", "name", "email"),
