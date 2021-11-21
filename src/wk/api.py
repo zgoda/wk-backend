@@ -57,6 +57,14 @@ class EventCollectionResource(MethodView):
         return resp
 
 
+class EventItemResource(MethodView):
+    def get(self, event_id: int) -> Response:
+        event = Event.get_or_none(Event.id == event_id)
+        if event is None:
+            return error_response({"message": "Event does not exist"}, 404)
+        return jsonify({"event": event_schema.dump(event)})
+
+
 # register routes
 bp.add_url_rule(
     "/user/<email>",
@@ -67,4 +75,9 @@ bp.add_url_rule(
     "/events",
     endpoint="event_collection",
     view_func=EventCollectionResource.as_view("event_collection"),
+)
+bp.add_url_rule(
+    "/event/<int:event_id>",
+    endpoint="event_item",
+    view_func=EventItemResource.as_view("event_item"),
 )
