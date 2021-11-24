@@ -41,7 +41,7 @@ class EventCollectionResource(MethodView):
         pagination = Pagination(q, page_size=current_app.config["PAGE_SIZE"])
         return jsonify(
             {
-                "events": event_schema.dump(pagination.items, many=True),
+                "collection": event_schema.dump(pagination.items, many=True),
                 "pagination": pagination.serialize_meta(),
             }
         )
@@ -52,7 +52,7 @@ class EventCollectionResource(MethodView):
         email = get_jwt_identity()
         user = User.get_active(email)
         e = Event.create(user=user, **args)
-        resp = jsonify({"message": "event created", "event": event_schema.dump(e)})
+        resp = jsonify({"message": "event created", "item": event_schema.dump(e)})
         resp.status_code = 201
         return resp
 
@@ -62,7 +62,7 @@ class EventItemResource(MethodView):
         event = Event.get_or_none(Event.id == event_id)
         if event is None:
             return error_response({"message": "Event does not exist"}, 404)
-        return jsonify({"event": event_schema.dump(event)})
+        return jsonify({"item": event_schema.dump(event)})
 
 
 # register routes

@@ -12,5 +12,5 @@ def test_get_ok(client, event_factory):
     url = url_for("api.event_item", event_id=event.id)
     rv = client.get(url)
     assert rv.status_code == 200
-    assert "event" in rv.json
-    assert rv.json["event"]["name"] == event.name
+    assert "item" in rv.json
+    assert rv.json["item"]["name"] == event.name
