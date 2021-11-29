@@ -1,4 +1,6 @@
 import datetime
+from typing import Mapping, Union
+
 from flask import Blueprint, Response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -62,6 +64,21 @@ class EventItemResource(MethodView):
         event = Event.get_or_none(Event.id == event_id)
         if event is None:
             return error_response({"message": "Event does not exist"}, 404)
+        return jsonify({"item": event_schema.dump(event)})
+
+    @jwt_required()
+    @use_args(event_schema)
+    def patch(
+        self, args: Mapping[str, Union[str, int, bool]], event_id: int
+    ) -> Response:
+        event = Event.get_or_none(Event.id == event_id)
+        if event is None:
+            return error_response({"message": "Event does not exist"}, 404)
+        if event.user.email != get_jwt_identity():
+            return error_response({"message": "not allowed"}, code=403)
+        q = Event.update(**args).where(Event.id == event.id)
+        q.execute()
+        event = Event.get_by_id(event_id)
         return jsonify({"item": event_schema.dump(event)})
 
 
